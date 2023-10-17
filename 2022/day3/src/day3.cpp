@@ -1,9 +1,6 @@
+#include <string>
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <vector>
-#include <sstream>
-#include <set>
 
 std::vector<std::string> ReadContents(std::ifstream& input)
 {

@@ -1,6 +1,6 @@
+#include <string>
 #include <iostream>
 #include <fstream>
-#include <algorithm>
 #include <numeric>
 
 auto countCalories(std::ifstream& input)

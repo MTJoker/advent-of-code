@@ -1,7 +1,6 @@
-#include <unordered_set>
-#include <fstream>
+#include <string>
 #include <iostream>
-#include <sstream>
+#include <fstream>
 
 unsigned DetectConsecutiveChars(std::string message, unsigned areaSize)
 {
