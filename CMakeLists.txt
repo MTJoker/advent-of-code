@@ -3,7 +3,7 @@ project(advent-of-code VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(AOC_YEAR "2022")
-set(AOC_DAY "7")
+set(AOC_DAY "8")
 
 include(CTest)
 enable_testing()
