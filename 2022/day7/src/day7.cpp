@@ -118,6 +118,19 @@ unsigned GetTotalSizeLimited(Directory& tree, unsigned limit)
     return result;
 }
 
+void GetDirecorySizesBiggerThan(Directory& tree, unsigned size, std::vector<unsigned>& sizes)
+{
+    if(tree.dirSize >= size)
+    {
+        sizes.push_back(tree.dirSize);
+
+        for(auto& subDir : tree.subdirectories)
+        {
+            GetDirecorySizesBiggerThan(subDir, size, sizes);
+        }
+    }
+}
+
 void main_part1(Directory root)
 {
     unsigned limit = 100000;
@@ -126,9 +139,17 @@ void main_part1(Directory root)
     std::cout << "Day 7, part 1, answer is: " << result << std::endl;
 }
 
-void main_part2()
+void main_part2(Directory root)
 {
-    std::cout << "Day 7, part 2, answer is: " << 0 << std::endl;
+    unsigned freeSpace = 70000000 - root.dirSize;
+    unsigned neededAdditionalSpace = 30000000 - freeSpace;
+
+    std::vector<unsigned> sizes;
+    GetDirecorySizesBiggerThan(root, neededAdditionalSpace, sizes);
+
+    std::sort(sizes.begin(), sizes.end(), std::greater<unsigned>());
+
+    std::cout << "Day 7, part 2, answer is: " << sizes.back() << std::endl;
 }
 
 int main(void)
@@ -137,10 +158,10 @@ int main(void)
 
     if(input.is_open())
     {
-        auto treeRoot = BuildDirTree(input);
+        auto root = BuildDirTree(input);
 
-        main_part1(treeRoot);
-        main_part2();
+        main_part1(root);
+        main_part2(root);
     }
    
     return 0;
