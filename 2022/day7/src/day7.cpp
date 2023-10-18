@@ -30,34 +30,42 @@ Directory BuildDirTree(std::ifstream& input)
     Directory root("/");
     Directory* pCurDir = &root;
 
-    while(input)
-    {
-        std::string line;
-        std::getline(input, line);
+    std::string line;
 
+    while(std::getline(input, line))
+    {
         if(line == "$ cd /")
         {
-            continue;
+            continue;   // ignore
         }
         else if(line == "$ cd ..")
         {
-            pCurDir = pCurDir->parent;        
+            if(pCurDir->parent)
+            {
+                pCurDir = pCurDir->parent;
+            }
+            else throw;       
         }
         else if(line.substr(0, 4) == "$ cd")
         {
+            bool haveDir = false;
             auto dirName = line.substr(5);
+
             for(auto& dir : pCurDir->subdirectories)
             {
                 if(dir.name == dirName)
                 {
+                    haveDir = true;
                     pCurDir = &dir;
                     break;
                 }
             }
+
+            if(!haveDir) throw;
         }
         else if(line.find("$ ls") != std::string::npos)
         {
-            continue;
+            continue;   // ignore
         }
         else if(line.substr(0, 3) == "dir")
         {
@@ -66,10 +74,16 @@ Directory BuildDirTree(std::ifstream& input)
         }
         else
         {
+            if(!std::isdigit(line[0])) 
+            {
+                throw;
+            }
             unsigned fileSize;
             std::string fileName;
             std::istringstream ss(line);
             ss >> fileSize >> fileName;
+
+            if(fileSize == 0) throw;
 
             File file(fileName, fileSize); 
             
@@ -89,23 +103,16 @@ Directory BuildDirTree(std::ifstream& input)
     return root;
 }
 
-unsigned GetDirSize(Directory& tree, unsigned limit)
+unsigned GetTotalSizeLimited(Directory& tree, unsigned limit)
 {
     unsigned result = 0;
-    if(tree.dirSize < limit)
+    if(tree.dirSize <= limit)
     {
         result += tree.dirSize;
     }
     for(auto& subDir : tree.subdirectories)
     {
-        if(subDir.dirSize < limit)
-        {
-            result += subDir.dirSize;
-        }
-        else
-        {
-            result += GetDirSize(subDir, limit);
-        }
+        result += GetTotalSizeLimited(subDir, limit);
     }
 
     return result;
@@ -114,7 +121,7 @@ unsigned GetDirSize(Directory& tree, unsigned limit)
 void main_part1(Directory root)
 {
     unsigned limit = 100000;
-    unsigned result = GetDirSize(root, limit);
+    unsigned result = GetTotalSizeLimited(root, limit);
 
     std::cout << "Day 7, part 1, answer is: " << result << std::endl;
 }
