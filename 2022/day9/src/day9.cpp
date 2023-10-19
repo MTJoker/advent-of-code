@@ -1,9 +1,88 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <set>
 
-void main_part1()
+using Point = std::pair<int, int>;
+using PointMap = std::set<Point>;
+using Points = std::tuple<Point, Point>;
+
+struct Instruction
 {
-    std::cout << "Day 9, part 1, answer is: " << 0 << std::endl;
+  Instruction(char direction, size_t steps) 
+  : direction(direction)
+  , steps(steps)
+  {};
+
+  char direction;
+  size_t steps;
+};
+
+using Instructions = std::vector<Instruction>;
+
+bool IsTouching(Point& headPos, Point& tailPos)
+{
+    auto [headX, headY] = headPos;
+    auto [tailX, tailY] = tailPos;
+
+    auto xDistance = std::abs(headX - tailX);
+    auto yDistance = std::abs(headY - tailY);
+
+    bool touching =  (xDistance <= 1) && (yDistance <= 1);
+    return touching;
+}
+
+Point MoveHead(Point& headStartPos, Instruction& instruction)
+{
+    if(instruction.direction == 'L') { return Point(headStartPos.first - 1, headStartPos.second); }
+    if(instruction.direction == 'R') { return Point(headStartPos.first + 1, headStartPos.second); }
+    if(instruction.direction == 'D') { return Point(headStartPos.first, headStartPos.second - 1); }
+    if(instruction.direction == 'U') { return Point(headStartPos.first, headStartPos.second + 1); }
+    throw;
+} 
+
+Point MoveTail(Point& headPos, Point& tailStartPos, Instruction& instruction)
+{
+    auto newTailPos = tailStartPos;
+
+    if(!IsTouching(headPos, tailStartPos))
+    {
+        std::cout << "TODO: calculate new tail pos" << std::endl;
+    }
+
+    return newTailPos;
+}
+
+Points HandleInstruction(Points& startPos, Instruction& instruction)
+{
+    Points endPos = startPos;
+
+    auto [headPos, tailPos] = startPos;
+
+    for(auto i = 0; i < instruction.steps; i++)
+    {
+        headPos = MoveHead(headPos, instruction);
+        tailPos = MoveTail(headPos, tailPos, instruction);
+    }
+
+    return {headPos, tailPos};
+}
+
+void main_part1(Instructions instructions)
+{
+    auto headPos = Point(0, 0);
+    auto tailPos = Point(0, 0);
+    auto positions = Points(headPos, tailPos);
+
+    auto pointMap = PointMap{tailPos};
+
+    for(auto& instruction : instructions)
+    {
+        positions = HandleInstruction(positions, instruction);
+        pointMap.insert(std::get<1>(positions));
+    }
+
+    std::cout << "Day 9, part 1, answer is: " << pointMap.size() << std::endl;
 }
 
 void main_part2()
@@ -17,7 +96,22 @@ int main(void)
 
     if(input.is_open())
     {
-        main_part1();
+        Instructions instructions;
+
+        std::string line;
+        while (std::getline(input, line)) 
+        {
+            char direction;
+            size_t steps;
+
+            std::istringstream ss(line);
+            ss >> direction >> steps;
+
+            Instruction instruction(direction, steps); // convert from stack to index
+            instructions.push_back(instruction);
+        } 
+
+        main_part1(instructions);
         main_part2();
     }
    
