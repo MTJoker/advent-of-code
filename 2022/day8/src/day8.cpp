@@ -1,10 +1,6 @@
-#include <vector>
-#include <string>
 #include <iostream>
-#include <cassert>
-#include <string_view>
+#include <vector>
 #include <fstream>
-#include <ranges>
 #include <sstream>
 
 using Grid = std::vector<std::vector<unsigned>>;
@@ -68,7 +64,6 @@ unsigned CalculateHighestScenicScore(Grid grid)
             }
 
             currentScore = visibleLeft * visibleRight * visibleTop * visibleBottom;
-
             highestScore = (currentScore > highestScore) ? currentScore : highestScore;
         }
     }    
