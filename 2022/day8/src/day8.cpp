@@ -1,9 +1,85 @@
+#include <vector>
+#include <string>
 #include <iostream>
+#include <cassert>
+#include <string_view>
 #include <fstream>
+#include <ranges>
+#include <sstream>
 
-void main_part1()
+using Grid = std::vector<std::vector<unsigned>>;
+
+unsigned CountVisibleTrees(Grid grid)
 {
-    std::cout << "Day 8, part 1, answer is: " << 0 << std::endl;
+    auto rowCount = grid.size();
+    auto colCount = grid[0].size();
+    auto count = 0;
+
+    for (auto currentRow = 0; currentRow < rowCount; ++currentRow) 
+    {
+        for (auto currentCol = 0; currentCol < colCount; ++currentCol) 
+        {
+            auto currentHeight = grid[currentRow][currentCol];
+
+            bool visibleFromLeft = true;
+            bool visibleFromRight = true;
+            bool visibleFromTop = true;
+            bool visibleFromBottom = true;
+
+            // Check to the left
+            for (auto col = currentCol - 1; col >= 0; --col) 
+            {
+                if (grid[currentRow][col] >= currentHeight) 
+                {
+                    visibleFromLeft = false;
+                    break;
+                }
+            }
+
+            // Check to the right
+            for (auto col = currentCol + 1; col < colCount; ++col) 
+            {
+                if (grid[currentRow][col] >= currentHeight) 
+                {
+                    visibleFromRight = false;
+                    break;
+                }
+            }
+
+            // Check to the top
+            for (auto row = currentRow - 1; row >= 0; --row) 
+            {
+                if (grid[row][currentCol] >= currentHeight) 
+                {
+                    visibleFromTop = false;
+                    break;
+                }
+            }
+
+            // Check to the bottom
+            for (int row = currentRow + 1; row < rowCount; ++row) 
+            {
+                if (grid[row][currentCol] >= currentHeight) 
+                {
+                    visibleFromBottom = false;
+                    break;
+                }
+            }
+
+            if (visibleFromLeft || visibleFromRight || visibleFromTop || visibleFromBottom) 
+            {
+                count++;
+            }
+        }
+    }
+
+    return count;
+}
+
+void main_part1(Grid& grid)
+{
+    unsigned visibleTreeCount = CountVisibleTrees(grid);
+    std::cout << "Day 8, part 1, answer is: " << visibleTreeCount << std::endl;
 }
 
 void main_part2()
@@ -13,11 +89,24 @@ void main_part2()
 
 int main(void)
 {
-    std::ifstream input("../2022/day8/data/day8_input.txt");
+    std::fstream input("../2022/day8/data/day8_input.txt");
+
+    Grid grid;
+    std::string line;
+
+    while (std::getline(input, line)) 
+    {
+        std::vector<unsigned> row;
+        for (char c : line) 
+        {
+            row.push_back(std::stoi(std::string(1, c))); 
+        }
+        grid.push_back(row);
+    }
 
     if(input.is_open())
     {
-        main_part1();
+        main_part1(grid);
         main_part2();
     }
    
