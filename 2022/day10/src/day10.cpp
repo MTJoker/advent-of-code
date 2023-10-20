@@ -1,4 +1,5 @@
 #include <iostream>
+#include <istream>
 #include <fstream>
 #include <sstream>
 
@@ -48,13 +49,14 @@ public:
     }
 
     unsigned getX(unsigned cycle) { return regX[cycle]; }
+    Register getX() { return regX; }
 
 private:
 
     Register regX;
 };
 
-void main_part1(Commands commands)
+Register main_part1(Commands commands)
 {
     CPU cpu;
 
@@ -72,11 +74,27 @@ void main_part1(Commands commands)
     }
 
     std::cout << "Day 10, part 1, answer is: " << signalStrength << std::endl;
+
+    return cpu.getX();
 }
 
-void main_part2()
+void main_part2(Register reg)
 {
-    std::cout << "Day 10, part 2, answer is: " << 0 << std::endl;
+    auto crtWidth = 40;
+
+    auto image = std::stringstream{};
+
+    for(auto cycle = 0; cycle < reg.size(); cycle++)
+    {        
+        auto spriteMin = reg[cycle] - 1;
+        auto spriteMax = reg[cycle] + 1;
+
+        auto col = cycle % crtWidth;
+        if(col == 0) image << std::endl;
+        image << ((col >= spriteMin && col <= spriteMax) ? "#" : ".");
+    }
+
+    std::cout << "Day 10, part 2, answer is: " << image.str() << std::endl;
 }
 
 int main(void)
@@ -114,8 +132,8 @@ int main(void)
             commands.push_back(command);
         } 
 
-        main_part1(commands);
-        main_part2();
+        Register reg = main_part1(commands);
+        main_part2(reg);
     }
    
     return 0;
