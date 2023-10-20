@@ -47,13 +47,26 @@ Point MoveTail(Point& headPos, Point& tailStartPos, Instruction& instruction)
 
     if(!IsTouching(headPos, tailStartPos))
     {
-        std::cout << "TODO: calculate new tail pos" << std::endl;
+        auto [headX, headY] = headPos;
+        auto [tailX, tailY] = tailStartPos;
+
+        auto xDistance = headX - tailX;
+        auto yDistance = headY - tailY;
+
+        if (yDistance > 1) yDistance = 1;
+        else if (yDistance < -1) yDistance = -1;
+
+        if (xDistance > 1) xDistance = 1;
+        else if (xDistance < -1) xDistance = -1;
+
+        newTailPos.first += xDistance;
+        newTailPos.second += yDistance;
     }
 
     return newTailPos;
 }
 
-Points HandleInstruction(Points& startPos, Instruction& instruction)
+Points HandleInstruction(Points& startPos, Instruction& instruction, PointMap& pointMap)
 {
     Points endPos = startPos;
 
@@ -63,6 +76,7 @@ Points HandleInstruction(Points& startPos, Instruction& instruction)
     {
         headPos = MoveHead(headPos, instruction);
         tailPos = MoveTail(headPos, tailPos, instruction);
+        pointMap.insert(tailPos);
     }
 
     return {headPos, tailPos};
@@ -78,8 +92,7 @@ void main_part1(Instructions instructions)
 
     for(auto& instruction : instructions)
     {
-        positions = HandleInstruction(positions, instruction);
-        pointMap.insert(std::get<1>(positions));
+        positions = HandleInstruction(positions, instruction, pointMap);
     }
 
     std::cout << "Day 9, part 1, answer is: " << pointMap.size() << std::endl;
