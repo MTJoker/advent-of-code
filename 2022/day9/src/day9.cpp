@@ -5,7 +5,7 @@
 
 using Point = std::pair<int, int>;
 using PointMap = std::set<Point>;
-using Points = std::tuple<Point, Point>;
+using Points = std::vector<Point>;
 
 struct Instruction
 {
@@ -41,66 +41,93 @@ Point MoveHead(Point& headStartPos, Instruction& instruction)
     throw;
 } 
 
-Point MoveTail(Point& headPos, Point& tailStartPos, Instruction& instruction)
+Points MoveTail(Point head, Points& tails, Instruction& instruction)
 {
-    auto newTailPos = tailStartPos;
-
-    if(!IsTouching(headPos, tailStartPos))
+    for(auto& tail : tails)
     {
-        auto [headX, headY] = headPos;
-        auto [tailX, tailY] = tailStartPos;
+        if(!IsTouching(head, tail))
+        {
+            auto [headX, headY] = head;
+            auto [tailX, tailY] = tail;
 
-        auto xDistance = headX - tailX;
-        auto yDistance = headY - tailY;
+            auto xDistance = headX - tailX;
+            auto yDistance = headY - tailY;
 
-        if (yDistance > 1) yDistance = 1;
-        else if (yDistance < -1) yDistance = -1;
+            if (yDistance > 1) yDistance = 1;
+            else if (yDistance < -1) yDistance = -1;
 
-        if (xDistance > 1) xDistance = 1;
-        else if (xDistance < -1) xDistance = -1;
+            if (xDistance > 1) xDistance = 1;
+            else if (xDistance < -1) xDistance = -1;
 
-        newTailPos.first += xDistance;
-        newTailPos.second += yDistance;
+            tail.first += xDistance;
+            tail.second += yDistance;
+        }
+        head = tail;
     }
 
-    return newTailPos;
+    return tails;
 }
 
-Points HandleInstruction(Points& startPos, Instruction& instruction, PointMap& pointMap)
+Points HandleInstruction(Points& points, Instruction& instruction, PointMap& pointMap)
 {
-    Points endPos = startPos;
-
-    auto [headPos, tailPos] = startPos;
+    auto headPos = points.front();    
+    Points tails(points.begin() + 1, points.end());
 
     for(auto i = 0; i < instruction.steps; i++)
     {
         headPos = MoveHead(headPos, instruction);
-        tailPos = MoveTail(headPos, tailPos, instruction);
-        pointMap.insert(tailPos);
+        tails = MoveTail(headPos, tails, instruction);
+        pointMap.insert(tails.back());
     }
 
-    return {headPos, tailPos};
+    Points result;
+    result.push_back(headPos);
+    result.insert(result.end(), tails.begin(), tails.end());
+
+    return result;
+}
+
+Points Initialize(Point head, unsigned numTails)
+{
+    auto tailPos = head;
+
+    Points points;
+    points.push_back(head);
+    for(auto i = 0; i < numTails; i++)
+    {
+        points.push_back(tailPos);
+    }
+
+    return points;
 }
 
 void main_part1(Instructions instructions)
 {
-    auto headPos = Point(0, 0);
-    auto tailPos = Point(0, 0);
-    auto positions = Points(headPos, tailPos);
+    auto head = Point(0, 0);
 
-    auto pointMap = PointMap{tailPos};
+    auto points = Initialize(head, 1);
+    auto pointMap = PointMap{head};
 
     for(auto& instruction : instructions)
     {
-        positions = HandleInstruction(positions, instruction, pointMap);
+        points = HandleInstruction(points, instruction, pointMap);
     }
 
     std::cout << "Day 9, part 1, answer is: " << pointMap.size() << std::endl;
 }
 
-void main_part2()
+void main_part2(Instructions instructions)
 {
-    std::cout << "Day 9, part 2, answer is: " << 0 << std::endl;
+    auto head = Point(0, 0);
+    auto points = Initialize(head, 9);
+    auto pointMap = PointMap{head};
+
+    for(auto& instruction : instructions)
+    {
+        points = HandleInstruction(points, instruction, pointMap);
+    }
+
+    std::cout << "Day 9, part 2, answer is: " << pointMap.size() << std::endl;
 }
 
 int main(void)
@@ -125,7 +152,7 @@ int main(void)
         } 
 
         main_part1(instructions);
-        main_part2();
+        main_part2(instructions);
     }
    
     return 0;
